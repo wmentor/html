@@ -9,23 +9,24 @@ import (
 )
 
 type HTML struct {
-	links     map[string]bool
-	iframes   map[string]bool
-	eraseCnt  int
-	output    *bytes.Buffer
-	lastEol   bool
+	links    map[string]bool
+	iframes  map[string]bool
+	eraseCnt int
+	output   *bytes.Buffer
+	lastEol  bool
 }
 
 var (
 	tagErase map[string]bool
-	bShy []byte
+	bShy     []byte
 )
 
 func init() {
 
 	tagErase = map[string]bool{}
 
-	for _, tg := range []string{"form", "iframe", "link", "meta", "noscript", "option", "script", "select", "style"} {
+	for _, tg := range []string{"audio", "del", "form", "iframe", "link", "meta", "noscript", "option", "s",
+		"script", "select", "source", "strike", "style", "svg", "video"} {
 		tagErase[tg] = true
 	}
 
@@ -52,7 +53,7 @@ func (h *HTML) beforeParse() {
 
 	h.links = make(map[string]bool)
 	h.iframes = make(map[string]bool)
-	
+
 	h.eraseCnt = 0
 	h.lastEol = true
 
@@ -102,15 +103,15 @@ func (h *HTML) onStartTag(t *ht.Token) {
 	}
 
 	switch t.Data {
-	
+
 	case "iframe":
-		
+
 		for _, a := range t.Attr {
 			if a.Key == "src" {
 				h.iframes[a.Val] = true
 			}
 		}
-	
+
 	case "a":
 
 		for _, a := range t.Attr {
