@@ -18,6 +18,7 @@ type HTML struct {
 
 var (
 	tagErase map[string]bool
+	bShy []byte
 )
 
 func init() {
@@ -27,6 +28,8 @@ func init() {
 	for _, tg := range []string{"form", "iframe", "link", "meta", "noscript", "option", "script", "select", "style"} {
 		tagErase[tg] = true
 	}
+
+	bShy = []byte{194, 173}
 
 }
 
@@ -121,11 +124,19 @@ func (h *HTML) onStartTag(t *ht.Token) {
 		return
 	}
 
-	if t.Data == "br" {
+	switch t.Data {
+
+	case "br":
+
 		if !h.lastEol {
 			h.output.WriteRune('\n')
 			h.lastEol = true
 		}
+
+	case "wbr":
+
+		h.lastEol = true
+
 	}
 }
 
@@ -162,7 +173,19 @@ func (h *HTML) onText(data []byte) {
 			h.output.WriteRune(' ')
 		}
 		h.lastEol = false
-		h.output.Write(data)
+
+		for {
+			idx := bytes.Index(data, bShy)
+
+			if idx < 0 {
+				h.output.Write(data)
+				break
+			}
+
+			h.output.Write(data[:idx])
+			data = data[idx+2:]
+		}
+
 	}
 }
 
