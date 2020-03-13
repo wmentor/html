@@ -2,10 +2,16 @@ package html
 
 import (
 	"bytes"
+	"crypto/tls"
+	"errors"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"strings"
+	"time"
 
 	ht "golang.org/x/net/html"
+	"golang.org/x/net/html/charset"
 )
 
 type HTML struct {
@@ -17,13 +23,25 @@ type HTML struct {
 	lastEol  bool
 }
 
+type GetOpts struct {
+	Timeout  time.Duration     // request timeout
+	Agent    string            // user agent
+	Headers  map[string]string // request header
+	NoDecode bool              // decode to utf-8 if charset is not utf-8
+}
+
 var (
+	ErrGetFailed error
+
 	tagErase map[string]bool
 	skpUrls  map[string]bool
+	defOpts  *GetOpts
 	bShy     []byte
 )
 
 func init() {
+
+	ErrGetFailed = errors.New("get request failed")
 
 	tagErase = map[string]bool{}
 
@@ -40,6 +58,12 @@ func init() {
 
 	bShy = []byte{194, 173}
 
+	defOpts = &GetOpts{
+		Timeout:  time.Second * 5,
+		Agent:    "html/bot",
+		Headers:  make(map[string]string),
+		NoDecode: false,
+	}
 }
 
 func New() *HTML {
@@ -218,7 +242,7 @@ func (h *HTML) EachLink(callback func(string)) {
 			continue
 		}
 
-		if ul[0] == '#' || strings.Index(ul,"mailto:") == 0 {
+		if ul[0] == '#' || strings.Index(ul, "mailto:") == 0 {
 			continue
 		}
 		callback(ul)
@@ -235,4 +259,64 @@ func (h *HTML) EachIframe(callback func(string)) {
 	for src := range h.iframes {
 		callback(src)
 	}
+}
+
+func (h *HTML) Get(url string, opts *GetOpts) error {
+
+	if opts == nil {
+		opts = defOpts
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	ua := &http.Client{
+		Timeout:   opts.Timeout,
+		Transport: tr,
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+
+	for k, v := range opts.Headers {
+		req.Header.Set(k, v)
+	}
+
+	if opts.Agent != "" {
+		req.Header.Set("User-Agent", opts.Agent)
+	}
+
+	resp, err := ua.Do(req)
+	if err != nil || resp == nil {
+		return ErrGetFailed
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return ErrGetFailed
+	}
+
+	var text []byte
+
+	if opts.NoDecode {
+		text, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return ErrGetFailed
+		}
+	} else {
+		utf8, err1 := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
+		if err1 != nil {
+			return ErrGetFailed
+		}
+
+		text, err = ioutil.ReadAll(utf8)
+		if err != nil {
+			return ErrGetFailed
+		}
+	}
+
+	h.Parse(bytes.NewReader(text))
+
+	return nil
 }
