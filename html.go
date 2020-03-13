@@ -19,6 +19,7 @@ type HTML struct {
 
 var (
 	tagErase map[string]bool
+	skpUrls  map[string]bool
 	bShy     []byte
 )
 
@@ -29,6 +30,12 @@ func init() {
 	for _, tg := range []string{"audio", "del", "form", "iframe", "link", "meta", "noscript", "option", "s",
 		"script", "select", "source", "strike", "style", "svg", "video"} {
 		tagErase[tg] = true
+	}
+
+	skpUrls = map[string]bool{}
+
+	for _, href := range []string{"", "#", "javascript:void(0);"} {
+		skpUrls[href] = true
 	}
 
 	bShy = []byte{194, 173}
@@ -203,4 +210,29 @@ func (h *HTML) onText(data []byte) {
 
 func (h *HTML) Text() []byte {
 	return h.output.Bytes()
+}
+
+func (h *HTML) EachLink(callback func(string)) {
+	for ul := range h.links {
+		if skpUrls[ul] {
+			continue
+		}
+
+		if ul[0] == '#' || strings.Index(ul,"mailto:") == 0 {
+			continue
+		}
+		callback(ul)
+	}
+}
+
+func (h *HTML) EachImage(callback func(string)) {
+	for src := range h.images {
+		callback(src)
+	}
+}
+
+func (h *HTML) EachIframe(callback func(string)) {
+	for src := range h.iframes {
+		callback(src)
+	}
 }
