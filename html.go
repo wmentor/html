@@ -11,6 +11,7 @@ import (
 type HTML struct {
 	links    map[string]bool
 	iframes  map[string]bool
+	images   map[string]bool
 	eraseCnt int
 	output   *bytes.Buffer
 	lastEol  bool
@@ -39,6 +40,7 @@ func New() *HTML {
 
 	res.links = make(map[string]bool)
 	res.iframes = make(map[string]bool)
+	res.images = make(map[string]bool)
 
 	res.output = bytes.NewBuffer(nil)
 
@@ -53,6 +55,7 @@ func (h *HTML) beforeParse() {
 
 	h.links = make(map[string]bool)
 	h.iframes = make(map[string]bool)
+	h.images = make(map[string]bool)
 
 	h.eraseCnt = 0
 	h.lastEol = true
@@ -109,6 +112,14 @@ func (h *HTML) onStartTag(t *ht.Token) {
 		for _, a := range t.Attr {
 			if a.Key == "src" {
 				h.iframes[a.Val] = true
+			}
+		}
+
+	case "img":
+
+		for _, a := range t.Attr {
+			if a.Key == "src" {
+				h.images[a.Val] = true
 			}
 		}
 
