@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -20,6 +21,7 @@ type HTML struct {
 	images   map[string]bool
 	eraseCnt int
 	output   *bytes.Buffer
+	curUrl   *url.URL
 	lastEol  bool
 }
 
@@ -242,33 +244,66 @@ func (h *HTML) EachLink(callback func(string)) {
 			continue
 		}
 
-		if ul[0] == '#' || strings.Index(ul, "mailto:") == 0 {
+		if ul[0] == '#' || strings.Index(ul, "mailto:") == 0 || strings.Index(ul, "javascript:") == 0 {
 			continue
 		}
-		callback(ul)
+		callback(h.prepareUrl(ul))
 	}
 }
 
 func (h *HTML) EachImage(callback func(string)) {
 	for src := range h.images {
-		callback(src)
+		callback(h.prepareUrl(src))
 	}
 }
 
 func (h *HTML) EachIframe(callback func(string)) {
 	for src := range h.iframes {
-		callback(src)
+		callback(h.prepareUrl(src))
 	}
 }
 
-func (h *HTML) Get(url string, opts *GetOpts) error {
+func (h *HTML) prepareUrl(src string) string {
+
+	if h.curUrl == nil {
+		return src
+	}
+
+	if strings.Index(src, "//") == 0 {
+		return h.curUrl.Scheme + ":" + src
+	}
+
+	if strings.Index(src, "/") == 0 {
+		return h.curUrl.Scheme + "://" + h.curUrl.Hostname() + src
+	}
+
+	return src
+}
+
+func (h *HTML) SetUrl(pageUrl string) error {
+	purl, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	h.curUrl = purl
+	return nil
+}
+
+func (h *HTML) ResetUrl() {
+	h.curUrl = nil
+}
+
+func (h *HTML) Get(pageUrl string, opts *GetOpts) error {
+
+	h.SetUrl(pageUrl)
 
 	if opts == nil {
 		opts = defOpts
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
+		DisableKeepAlives: true,
 	}
 
 	ua := &http.Client{
@@ -276,7 +311,7 @@ func (h *HTML) Get(url string, opts *GetOpts) error {
 		Transport: tr,
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", pageUrl, nil)
 
 	for k, v := range opts.Headers {
 		req.Header.Set(k, v)
@@ -288,10 +323,13 @@ func (h *HTML) Get(url string, opts *GetOpts) error {
 
 	resp, err := ua.Do(req)
 	if err != nil || resp == nil {
+		println(err.Error())
 		return ErrGetFailed
 	}
 
 	defer resp.Body.Close()
+
+	println(resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		return ErrGetFailed
