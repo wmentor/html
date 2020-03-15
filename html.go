@@ -323,13 +323,10 @@ func (h *HTML) Get(pageUrl string, opts *GetOpts) error {
 
 	resp, err := ua.Do(req)
 	if err != nil || resp == nil {
-		println(err.Error())
 		return ErrGetFailed
 	}
 
 	defer resp.Body.Close()
-
-	println(resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		return ErrGetFailed
