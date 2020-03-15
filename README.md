@@ -1,21 +1,21 @@
-= HTML
+# HTML
 
 wmentor/html is a simple HTML parser and data fetcher library written on Golang under MIT License.
 
-== Require
+## Require
 
 * Golang (version >= 1.12)
 * golang.org/x/net
 
-== Install
+## Install
 
 ```
 go get github.com/wmentor/html
 ```
 
-== Usage
+## Usage
 
-=== Fetch data from URL
+### Fetch data from URL
 
 ```golang
 package main
@@ -55,7 +55,7 @@ func main() {
 }
 ```
 
-=== Fetch data from file/stdin
+### Fetch data from file/stdin
 
 ```golang
 package main
