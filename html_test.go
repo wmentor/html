@@ -9,7 +9,7 @@ import (
 func TestHTML(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write( []byte(`<!DOCTYPE html>
+		w.Write([]byte(`<!DOCTYPE html>
 <html itemscope itemtype="https://schema.org/Article">
 <head>
 <title>DSN</title>
@@ -197,9 +197,9 @@ import (
   "github.com/wmentor/dsn"
 )
 func main() {                                                                                                                        [151/579]
-                                                                                                                                              
-  str := "user=mylogin passwd=mypass database=mydb port=5432 sslmode=true"                                                                                                          
-                                                                                                                                              
+
+  str := "user=mylogin passwd=mypass database=mydb port=5432 sslmode=true"
+
   ds, err := dsn.New(str)
   if err != nil {
     panic("invalid string")
@@ -250,14 +250,14 @@ SharingOpts = {"url":"https://wmentor.ru/dsn?v=1","title":"DSN","text":" We ofte
 	defer ts.Close()
 
 	parser := New()
-	err := parser.Get(ts.URL,nil)
+	err := parser.Get(ts.URL, nil)
 	if err != nil {
 		t.Fatal("HTML.Get failed")
 	}
 
 	txt := string(parser.Text())
 
-waitText := `DSN WMENTOR.RU
+	waitText := `WMENTOR.RU
 WMentor.ru
 X
 Main page
@@ -307,9 +307,9 @@ import (
   "github.com/wmentor/dsn"
 )
 func main() {                                                                                                                        [151/579]
-                                                                                                                                              
-  str := "user=mylogin passwd=mypass database=mydb port=5432 sslmode=true"                                                                                                          
-                                                                                                                                              
+
+  str := "user=mylogin passwd=mypass database=mydb port=5432 sslmode=true"
+
   ds, err := dsn.New(str)
   if err != nil {
     panic("invalid string")

@@ -48,7 +48,7 @@ func init() {
 	tagErase = map[string]bool{}
 
 	for _, tg := range []string{"audio", "del", "form", "iframe", "link", "meta", "noscript", "option", "s",
-		"script", "select", "source", "strike", "style", "svg", "video"} {
+		"script", "select", "source", "strike", "style", "svg", "title", "video"} {
 		tagErase[tg] = true
 	}
 
