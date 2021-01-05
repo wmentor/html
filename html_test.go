@@ -271,7 +271,10 @@ archive
 archive
 2020 2019
 follow me
-DSN We often work with configuration strings like pq database connection:
+
+DSN
+
+We often work with configuration strings like pq database connection:
 user=mylogin password=mypass database=mydb host=127.0.0.1 port=5432 The simplest way to parse them in Golang is regular expressions:
 package main
 

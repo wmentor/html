@@ -39,6 +39,7 @@ var (
 	skpUrls  map[string]bool
 	defOpts  *GetOpts
 	bShy     []byte
+	hTags    map[string]bool
 )
 
 func init() {
@@ -50,6 +51,12 @@ func init() {
 	for _, tg := range []string{"audio", "del", "form", "iframe", "link", "meta", "noscript", "option", "s",
 		"script", "select", "source", "strike", "style", "svg", "title", "video"} {
 		tagErase[tg] = true
+	}
+
+	hTags = make(map[string]bool)
+
+	for _, tg := range []string{"h1", "h2", "h3", "h4", "h5", "h6"} {
+		hTags[tg] = true
 	}
 
 	skpUrls = map[string]bool{}
@@ -138,6 +145,10 @@ func (h *HTML) onStartTag(t *ht.Token) {
 		}
 	}
 
+	if hTags[t.Data] {
+		h.output.WriteRune('\n')
+	}
+
 	switch t.Data {
 
 	case "iframe":
@@ -195,6 +206,14 @@ func (h *HTML) onCloseTag(t *ht.Token) {
 	}
 
 	if h.eraseCnt > 0 {
+		return
+	}
+
+	if hTags[t.Data] {
+		if !h.lastEol {
+			h.output.WriteString("\n\n")
+			h.lastEol = true
+		}
 		return
 	}
 
