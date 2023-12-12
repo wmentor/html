@@ -1,7 +1,6 @@
 # HTML
 
-![test](https://github.com/wmentor/html/workflows/test/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/wmentor/html/badge.svg?branch=master&v=1.0.1)](https://coveralls.io/github/wmentor/html?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/wmentor/html/badge.svg?branch=master&v=1.0.3)](https://coveralls.io/github/wmentor/html?branch=master)
 [![https://goreportcard.com/report/github.com/wmentor/html](https://goreportcard.com/badge/github.com/wmentor/html)](https://goreportcard.com/report/github.com/wmentor/html)
 [![https://pkg.go.dev/github.com/wmentor/html](https://pkg.go.dev/badge/github.com/wmentor/html.svg)](https://pkg.go.dev/github.com/wmentor/html)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -10,7 +9,7 @@ Simple HTML parser and data fetcher library written on Golang under MIT License.
 
 ## Require
 
-* Golang (version >= 1.12)
+* Golang (version >= 1.20)
 * golang.org/x/net
 
 ## Install
